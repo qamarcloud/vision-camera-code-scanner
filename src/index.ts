@@ -1,4 +1,4 @@
-import type { Frame } from 'react-native-vision-camera';
+import type {  VisionCameraProxy, Frame  } from 'react-native-vision-camera';
 
 /**
  * @see https://developers.google.com/android/reference/com/google/mlkit/vision/barcode/Barcode.BarcodeFormat
@@ -297,15 +297,31 @@ export interface CodeScannerOptions {
  * @param types Array of barcode types to detect (for optimal performance, use less types)
  * @returns Detected barcodes from MLKit
  */
-export function scanBarcodes(
-  frame: Frame,
-  types: BarcodeFormat[],
-  options?: CodeScannerOptions
-): Barcode[] {
-  'worklet';
-  // @ts-ignore
-  // eslint-disable-next-line no-undef
-  return __scanCodes(frame, types, options);
-}
+ const plugin = VisionCameraProxy.initFrameProcessorPlugin('scanCodes');
 
-export * from './hook';
+ export function scanBarcodes(
+   frame: Frame,
+   types: BarcodeFormat[],
+   options?: CodeScannerOptions
+ ): Barcode[] {
+   'worklet';
+   // @ts-ignore
+   // eslint-disable-next-line no-undef
+   //return __scanCodes(frame, types, options);
+ 
+   const pluginOptions = {
+     types: types,
+     options: {
+       checkInverted: options?.checkInverted,
+     },
+   };
+   
+   if (plugin == null) {
+     throw new Error(
+       'Failed to load Frame Processor Plugin "scanCodes"! Please check your dependencies and make sure that the plugin is linked correctly.'
+     );
+   }
+   return plugin.call(frame,pluginOptions) as any;
+ }
+ 
+ export * from './hook';
