@@ -324,4 +324,4 @@ export interface CodeScannerOptions {
    return plugin.call(frame,pluginOptions) as any;
  }
  
- export * from './hook';
+ //export * from './hook';
